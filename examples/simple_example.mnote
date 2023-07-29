@@ -1,0 +1,15 @@
+next line will be empty
+
+after the empty line
+%def(vector_space):
+    this is the def of a vector space
+    this is the second line
+    %res(key_theorem):
+        Key theorem of linear algebra goes here
+        %enum
+            %i this is the first item
+            %i this is the second item
+            this is the second line of the second item
+            %eq
+                \sum_{i=1}^{n}{a}\\
+        Now is more text after  
