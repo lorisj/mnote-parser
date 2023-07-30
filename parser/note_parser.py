@@ -10,32 +10,41 @@ import argparse
 
 
 block_grammer = r"""
-    start: content*
+    start: (content | section_name)*
+
+    section_name: _WS* "#" /[^%\n]+/ _NL
 
     content: (text | block)
 
-    block: (definition | result | example)
+    block: (definition | result | example | proof)
 
-    result: ("%res(" BLOCKNAME "):")  _NL [_INDENT content* _DEDENT] 
-    example: ("%exp(" BLOCKNAME "):")  _NL [_INDENT content* _DEDENT]
-    definition: ("%def(" BLOCKNAME "):") _NL [_INDENT content* _DEDENT]
+    result: _WS* ("%res(" BLOCKNAME ")")  _WS*_NL [_INDENT content* _DEDENT] 
+    example: _WS*  ("%exp(" BLOCKNAME ")")  _WS*_NL [_INDENT content* _DEDENT]
+    definition: _WS*  ("%def(" BLOCKNAME ")") _WS*_NL [_INDENT content* _DEDENT]
+    proof: _WS* ("%pf") _WS* _NL [_INDENT content* _DEDENT]
 
 """
 
 
-
 # Text grammar, i.e. simplifying LaTeX structure. Remember that string has the form:"this is a string, it contains the quotes"
 text_grammar = r"""
-    text: (line | tex_block | empty_line) +
+    text: (line | tex_block | empty_line | line_command) +
+
+    line_command: (dline | subtitle)
     line: (_WS* STRING  _NL?) 
+    
     empty_line: _WS* _NL
     tex_block: enumerate | itemize | nice_equation | equation #| image
-    enumerate: "%enum" _NL [_INDENT item* _DEDENT]
-    itemize: "%item" _NL [_INDENT item* _DEDENT]
-    nice_equation: "%neq" _NL [_INDENT line+ _DEDENT]
-    equation: "%eq" _NL [_INDENT line+ _DEDENT]
-    item: "%i" _WS text
-    STRING:  /[^%\n]+/
+    enumerate:_WS* "%enum" _WS* _NL [_INDENT item* _DEDENT]
+    itemize: _WS*"%item" _WS* _NL [_INDENT item* _DEDENT]
+    nice_equation: _WS*"%neq" _WS*_NL [_INDENT line+ _DEDENT]
+    equation: _WS*"%eq" _WS* _NL [_INDENT line+ _DEDENT]
+    item: "%i" _WS? content*
+
+    dline: _WS* "%dl" _NL?
+    subtitle: _WS* "%st(" BLOCKNAME ")" _NL?
+
+    STRING:  /[^%#\n]+/
     _WS: /[\t ]+/
 """
 
@@ -53,8 +62,23 @@ class TreeIndenter(Indenter):
     DEDENT_type = '_DEDENT'
     tab_len = 4
 
+def title_case(title: str) -> str:
+    minor_words = ["as", "at", "by", "in", "of", "off", "on", "per", "to", "up", "via", "the", "and", "but", "for", "if", "nor", "or", "so", "yet", "a", "an"]
+    words = title.split()
+    title_cased_words = []
+    for i, word in enumerate(words):
+        if i == 0 or i == len(words) - 1 or word.lower() not in minor_words:
+            title_cased_words.append(word.capitalize())
+        else:
+            title_cased_words.append(word.lower())
+    return " ".join(title_cased_words)
 
 
+def format_name(name: str) -> str:
+    
+    name = name.replace("_", " ")
+    name = title_case(name)
+    return name
 class MyInterpreter(Interpreter):
     def ind_print(self, string_in):
         print('\t' * self.indent_level, end='')
@@ -83,10 +107,8 @@ class MyInterpreter(Interpreter):
            
 
     def block(self, tree):
-        #self.indent_level += 1
-        self.visit(tree.children[0])
-        #self.indent_level -= 1
-        print()
+        for child in tree.children:
+            self.visit(child)
 
     def result(self, tree):
         self.boxed_object("result", tree)
@@ -96,38 +118,59 @@ class MyInterpreter(Interpreter):
 
     def definition(self, tree):
         self.boxed_object("definition", tree)
-    def STRING(self, token):
-        print("STRING")
+    
     def text(self, tree):
         for child in tree.children:
             self.visit(child)
+    def dline(self, tree):
+        self.ind_print("\\dline")
+
+    def proof(self, tree):
+        self.tex_block_print("proof", tree)
 
     def line(self, tree):
         self.ind_print(tree.children[0])
 
+    def subtitle(self, tree):
+        self.ind_print("\\subtitle{" + format_name(tree.children[0]) + "}")
+    
+    def section_name(self, tree):
+        number_pound_signs = tree.children[0].count("#")
+        name_without_pound_signs = format_name(tree.children[0].replace("#", "").strip())
+        if number_pound_signs == 0:
+            self.ind_print("\\section{" + name_without_pound_signs + "}")
+        elif number_pound_signs == 1:
+            self.ind_print("\\subsection{" + name_without_pound_signs + "}")
+        else: # raise error, too many pound signs
+            raise ValueError("Too many pound signs in section name")
+            
+    def empty_line(self, tree):
+        self.ind_print("")
+
     def tex_block(self, tree):
-        
-        self.visit(tree.children[0])
+        for child in tree.children:
+            self.visit(child)
         
     def enumerate(self, tree):
         self.tex_block_print("enumerate", tree)
-        
 
     def itemize(self, tree):
         self.tex_block_print("itemize", tree)
 
     def item(self, tree):
         self.ind_print("\\item")
-        self.visit(tree.children[0])
+        for child in tree.children:
+            self.visit(child)
 
     def nice_equation(self, tree):
         self.tex_block_print("niceeq", tree)
 
     def equation(self, tree):
-        self.tex_block_print("equation", tree)
+        self.tex_block_print("algin", tree) # we call equations align, as this allows multi-line equations
 
     def boxed_object(self, type, tree):
         name = tree.children[0]
+        name = format_name(name)
         content_list = tree.children[1:]
         self.ind_print("\\begin{" + type + "}{" + name + "}{" + name + "}")
         self.indent_level += 1
@@ -138,46 +181,29 @@ class MyInterpreter(Interpreter):
 
 
 
-
-
-
-
-
-
-
 full_grammar = block_grammer + text_grammar + symbol_grammar 
 
 
+latex_start_text = r"""\documentclass[12pt]{article}
+\usepackage{notespkg}
+\usepackage{screenread} %Puts every document on one page comment out if not needed.
+%\addbibresource{bibliography.bib} % Rename bibliography.bib to your current .bib file, in the same directory. 
+\usepackage{categorytheory}
+\title{\currfilebase} % \currfilebase removes the .tex
+\author{Loris Jautakas}
+\begin{document}
+\maketitle
 
+%\tableofcontents
+"""
+
+latex_end_text = r"""\end{document}"""
 #transformed_parser = Lark(full_grammar, parser='lalr', postlex=TreeIndenter(), transformer=MyTransformer())
 test_parser = Lark(full_grammar, parser='lalr', postlex=TreeIndenter())
 
 
-test_input_text=r"""next line will be empty
-
-after the empty line
-%def(vector_space):
-    this is the def of a vector space
-    this is the second line
-    %res(key_theorem):
-        Key theorem of linear algebra goes here
-        %enum
-            %i this is the first item
-            %i this is the second item
-            this is the second line of the second item
-            %eq
-                \sum_{i=1}^{n}{a}\\
-        Now is more text after  
-"""     
-
-def test():
-
-    tree = test_parser.parse(test_input_text)
-    interpreter = MyInterpreter()
-    interpreter.visit(tree)
-    print(tree.pretty())
-
-
+def get_parser():
+    return Lark(full_grammar, parser='lalr', postlex=TreeIndenter())
 
     
 if __name__ == '__main__':
@@ -187,16 +213,23 @@ if __name__ == '__main__':
 
     
     file_path = args.file_path
+
+    #file_path = "/home/loris/Projects/structured_notes/examples.mnote"
     
-    mnote_parser = Lark(full_grammar, parser='lalr', postlex=TreeIndenter())
+    mnote_parser = get_parser()
 
     with open(file_path, 'r') as input_file:
         input_text = input_file.read()
-        print(input_text == test_input_text)
-        print(input_text)
-
+        
         tree = mnote_parser.parse(input_text)
         interpreter = MyInterpreter()
+        
+        print(tree.pretty())
+        exit()
+        print(latex_start_text)
+        
         interpreter.visit(tree)
+        print(latex_end_text)
+
 
 
