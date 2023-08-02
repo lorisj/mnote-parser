@@ -1,6 +1,8 @@
 from neo4j import GraphDatabase
 from lark.tree import Tree
+from lark import Token
 from note_parser import get_parser
+
 def add_tree(tx, tree, parent_name=None, parent_type=None):
     # Only process if this is a block
     if tree.data in ['definition', 'result', 'example']:
@@ -15,9 +17,27 @@ def add_tree(tx, tree, parent_name=None, parent_type=None):
             tx.run(f"""
             MATCH (a:{parent_type} {{name: $parent_name}})
             MATCH (b:{tree.data} {{name: $name}})
-            MERGE (a)-[:PARENT_OF]->(b)
+            MERGE (b)-[:IN_CONTEXT]->(a)
             """, parent_name=parent_name, name=name)
-    
+            
+        if isinstance(tree.children[1], Token) and tree.children[1].type == 'BLOCKNAME':
+            related_node_name = tree.children[1].value  # get the name of the related node
+            tx.run(f"""
+            MATCH (b:{tree.data} {{name: $name}})
+            MATCH (d:{Token('RULE', 'definition')} {{name: $related_node_name}})
+            MERGE (b)-[:IN_CONTEXT]->(d)
+            """, name=name, related_node_name=related_node_name) # MATCH DEFINTIONS
+            tx.run(f"""
+            MATCH (b:{tree.data} {{name: $name}})
+            MATCH (d:{Token('RULE', 'result')} {{name: $related_node_name}})
+            MERGE (b)-[:IN_CONTEXT]->(d)
+            """, name=name, related_node_name=related_node_name) # MATCH RESULTS
+            tx.run(f"""
+            MATCH (b:{tree.data} {{name: $name}})
+            MATCH (d:{Token('RULE', 'example')} {{name: $related_node_name}})
+            MERGE (b)-[:IN_CONTEXT]->(d)
+            """, name=name, related_node_name=related_node_name) #MATCH EXAMPLES
+
     # Recursively add all child blocks
     for child in tree.children:
         if isinstance(child, Tree):

@@ -18,9 +18,9 @@ block_grammer = r"""
 
     block: (definition | result | example | proof)
 
-    result: _WS* ("%res(" BLOCKNAME ")")  _WS*_NL [_INDENT content* _DEDENT] 
-    example: _WS*  ("%exp(" BLOCKNAME ")")  _WS*_NL [_INDENT content* _DEDENT]
-    definition: _WS*  ("%def(" BLOCKNAME ")") _WS*_NL [_INDENT content* _DEDENT]
+    result: _WS* ("%res(" BLOCKNAME ")") ("["BLOCKNAME"]")? _WS*_NL [_INDENT content* _DEDENT] 
+    example: _WS*  ("%exp(" BLOCKNAME ")") ("["BLOCKNAME"]")? _WS*_NL [_INDENT content* _DEDENT]
+    definition: _WS*  ("%def(" BLOCKNAME ")")("["BLOCKNAME"]")? _WS*_NL [_INDENT content* _DEDENT]
     proof: _WS* ("%pf") _WS* _NL [_INDENT content* _DEDENT]
 
 """
@@ -30,9 +30,11 @@ block_grammer = r"""
 text_grammar = r"""
     text: (line | tex_block | empty_line | line_command) +
 
-    line_command: (dline | subtitle)
-    line: (_WS* STRING  _NL?) 
-    
+    line_command: (dline | subtitle | image)
+    line: (_WS* STRING inline_command? STRING?  _NL?) 
+    inline_command: block_reference #| bib_reference
+    block_reference: _WS* "%ref(" BLOCKNAME ")" _WS*
+
     empty_line: _WS* _NL
     tex_block: enumerate | itemize | nice_equation | equation #| image
     enumerate:_WS* "%enum" _WS* _NL [_INDENT item* _DEDENT]
@@ -43,6 +45,7 @@ text_grammar = r"""
 
     dline: _WS* "%dl" _NL?
     subtitle: _WS* "%st(" BLOCKNAME ")" _NL?
+    image: _WS* "%img(" BLOCKNAME ")" _NL?
 
     STRING:  /[^%#\n]+/
     _WS: /[\t ]+/
@@ -80,18 +83,26 @@ def format_name(name: str) -> str:
     name = title_case(name)
     return name
 class MyInterpreter(Interpreter):
-    def ind_print(self, string_in):
+    def ind_println(self, string_in):
         print('\t' * self.indent_level, end='')
         print(string_in)
+        
+    def ind_print(self, string_in):
+        print('\t' * self.indent_level, end='')
+        print(string_in, end='')
     
     def tex_block_print(self, type, tree):
-        self.ind_print("\\begin{" + type + "}")
+        self.ind_println("\\begin{" + type + "}")
         self.indent_level += 1
         for child in tree.children:
             self.visit(child)
         self.indent_level -= 1
-        self.ind_print("\\end{" + type + "}")
+        self.ind_println("\\end{" + type + "}")
 
+
+    def block_reference(self, tree): # TODO: Communicates with server.
+        print("\\refdef{" + format_name(tree.children[0]) + "}", end="") # TODO: Change this to either link. Local reference with %lref
+    
     def __init__(self):
         super().__init__()
         self.indent_level = 0
@@ -123,29 +134,35 @@ class MyInterpreter(Interpreter):
         for child in tree.children:
             self.visit(child)
     def dline(self, tree):
-        self.ind_print("\\dline")
+        self.ind_println("\\dline")
 
     def proof(self, tree):
         self.tex_block_print("proof", tree)
 
     def line(self, tree):
-        self.ind_print(tree.children[0])
+        self.ind_print("")
+        for child in tree.children:
+            if isinstance(child, str):
+                print(child, end="")
+            else: # Handle inline commands,
+                self.visit(child)
+        print() # get newline at end.
 
     def subtitle(self, tree):
-        self.ind_print("\\subtitle{" + format_name(tree.children[0]) + "}")
+        self.ind_println("\\subtitle{" + format_name(tree.children[0]) + "}")
     
     def section_name(self, tree):
         number_pound_signs = tree.children[0].count("#")
         name_without_pound_signs = format_name(tree.children[0].replace("#", "").strip())
         if number_pound_signs == 0:
-            self.ind_print("\\section{" + name_without_pound_signs + "}")
+            self.ind_println("\\section{" + name_without_pound_signs + "}")
         elif number_pound_signs == 1:
-            self.ind_print("\\subsection{" + name_without_pound_signs + "}")
+            self.ind_println("\\subsection{" + name_without_pound_signs + "}")
         else: # raise error, too many pound signs
             raise ValueError("Too many pound signs in section name")
             
     def empty_line(self, tree):
-        self.ind_print("")
+        self.ind_println("")
 
     def tex_block(self, tree):
         for child in tree.children:
@@ -158,7 +175,7 @@ class MyInterpreter(Interpreter):
         self.tex_block_print("itemize", tree)
 
     def item(self, tree):
-        self.ind_print("\\item")
+        self.ind_println("\\item")
         for child in tree.children:
             self.visit(child)
 
@@ -169,15 +186,22 @@ class MyInterpreter(Interpreter):
         self.tex_block_print("algin", tree) # we call equations align, as this allows multi-line equations
 
     def boxed_object(self, type, tree):
-        name = tree.children[0]
-        name = format_name(name)
+        
         content_list = tree.children[1:]
-        self.ind_print("\\begin{" + type + "}{" + name + "}{" + name + "}")
+        name = ""
+
+        if isinstance(tree.children[1], str):
+            content_list = tree.children[2:]
+            name = f"(in {tree.children[1]}) "# keep space here
+        name+= tree.children[0]
+        name = format_name(name)
+
+        self.ind_println("\\begin{" + type + "}{" + name + "}{" + name + "}")
         self.indent_level += 1
         for child in content_list:
             self.visit(child)
         self.indent_level -= 1
-        self.ind_print("\\end{" + type + "}")
+        self.ind_println("\\end{" + type + "}")
 
 
 
@@ -207,14 +231,14 @@ def get_parser():
 
     
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('file_path', help='The path to the input file')
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('file_path', help='The path to the input file')
+    # args = parser.parse_args()
 
     
-    file_path = args.file_path
+    # file_path = args.file_path
 
-    #file_path = "/home/loris/Projects/structured_notes/examples.mnote"
+    file_path = "/home/loris/Projects/structured_notes/examples/category_theory_introduction.mnote"
     
     mnote_parser = get_parser()
 
