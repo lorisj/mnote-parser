@@ -1,0 +1,109 @@
+img {
+    width: 170px;
+    border-radius: 40px;
+    float: left;
+    /*! margin-right: 30px; */
+}
+
+a.link {
+    font-weight: bold;
+    color:darkcyan;
+    /*darkcyan*/
+    
+    /*! text-align: center; */
+    /*! width: 100%; */
+}
+
+body{
+    background-color: darkgrey;
+    margin:0;
+    font-family: BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;
+} 
+
+p{
+    font-size: x-large; 
+    color: black;
+}
+
+.content {
+    display: flex;
+    flex-direction: row;
+    padding: 1em;
+    width: calc(100% - 20em);
+    margin: auto;
+}
+
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border-bottom: 2px solid black;
+    padding-left: 5em;
+    align-items: baseline;
+    /*! width: calc(100% - 20em); */
+    padding-right: 5em;
+    margin-left: 5em;
+    margin-right: 5em;
+}
+
+.header h1 {
+    display: inline;
+}
+
+.header .buttons {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    margin-left: 2em;
+}
+
+
+.header .buttons a {
+    text-decoration: none;
+    color: unset;
+    background-color: transparent;
+    font-size: 1.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    height: 100%;
+    border-top: transparent;
+    border-bottom: transparent;
+    border-right: transparent;
+    border-left: 2px solid black;
+}
+.header .buttons a:hover {
+    background-color: rosybrown;
+}
+
+.header .buttons a:first-child {
+    border-left:transparent;
+}
+
+.header .buttons a.selected {
+    /*background-color: yellow;*/
+    font-weight: bold;
+}
+
+.sidebar {
+    font-size: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 2em;
+  }
+.sidebar img {
+  margin-bottom: 1em;
+}
+
+.project {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 2px solid black;
+  margin-top: 2em;
+}
+
+.project .sidebar {
+  font-size: 2em;
+}

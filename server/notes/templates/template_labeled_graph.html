@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style type="text/css">
+        #network-container {
+            height: 400px;
+        }
+    </style>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+</head>
+
+<body>
+    <div id="edge-types-container"></div>
+    <div>
+        <label for="checkboxSource">Filter by Source:</label>
+        <input type="checkbox" id="checkboxSource">
+        <br>
+        <label for="checkboxTarget">Filter by Target:</label>
+        <input type="checkbox" id="checkboxTarget">
+    </div>
+    <div id="network-container"></div>
+
+    <script>
+        var nodes = {{ nodes  | safe}};
+
+        var edges = {{ edges | safe }};
+
+        var edgeTypes = {{ edge_types | safe}};
+
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+
+        var options = {
+            edges: {
+                arrows: 'to',
+                smooth: false
+            },
+            physics: {
+                enabled: false
+            }
+        };
+
+        var container = document.getElementById('network-container');
+        var network = new vis.Network(container, data, options);
+
+        var edgeTypesContainer = document.getElementById('edge-types-container');
+        for (var type in edgeTypes) {
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = 'checkbox-' + type;
+            checkbox.checked = false;
+
+            var label = document.createElement('label');
+            label.htmlFor = checkbox.id;
+            label.appendChild(document.createTextNode(' ' + type));
+
+            edgeTypesContainer.appendChild(checkbox);
+            edgeTypesContainer.appendChild(label);
+            edgeTypesContainer.appendChild(document.createElement('br'));
+        }
+
+        network.on('selectNode', function (params) {
+            updateEdgeVisibility(params.nodes[0]);
+        });
+
+        network.on('deselectNode', function (params) {
+            updateEdgeVisibility();
+        });
+
+        document.getElementById('checkboxSource').addEventListener('change', function () {
+            updateEdgeVisibility(network.getSelectedNodes()[0]);
+        });
+
+        document.getElementById('checkboxTarget').addEventListener('change', function () {
+            updateEdgeVisibility(network.getSelectedNodes()[0]);
+        });
+
+        for (var type in edgeTypes) {
+            document.getElementById('checkbox-' + type).addEventListener('change', function () {
+                updateEdgeVisibility(network.getSelectedNodes()[0]);
+            });
+        }
+
+        function updateEdgeVisibility(selectedNodeId) {
+            var filterSource = document.getElementById('checkboxSource').checked;
+            var filterTarget = document.getElementById('checkboxTarget').checked;
+
+            edges.forEach(function (edge) {
+                var checkbox = document.getElementById('checkbox-' + edge.type);
+                if (checkbox.checked && (!filterSource && !filterTarget ||
+                    (filterSource && edge.from == selectedNodeId) ||
+                    (filterTarget && edge.to == selectedNodeId))) {
+                    edge.hidden = false;
+                    edge.color = edgeTypes[edge.type].color;
+                } else {
+                    edge.hidden = true;
+                }
+                network.body.data.edges.update(edge);
+            });
+        }
+
+        // Initialize edge visibility
+        updateEdgeVisibility();
+    </script>
+</body>
+
+</html>

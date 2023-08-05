@@ -2,6 +2,9 @@ from neo4j import GraphDatabase
 from lark.tree import Tree
 from lark import Token
 from note_parser import get_parser
+import configparser
+
+import os as os
 
 def add_tree(tx, tree, parent_name=None, parent_type=None):
     # Only process if this is a block
@@ -20,7 +23,7 @@ def add_tree(tx, tree, parent_name=None, parent_type=None):
             MERGE (b)-[:IN_CONTEXT]->(a)
             """, parent_name=parent_name, name=name)
             
-        if isinstance(tree.children[1], Token) and tree.children[1].type == 'BLOCKNAME':
+        if isinstance(tree.children[1], Token) and tree.children[1].type == 'BLOCKNAME': # Child specifies a context block
             related_node_name = tree.children[1].value  # get the name of the related node
             tx.run(f"""
             MATCH (b:{tree.data} {{name: $name}})
@@ -51,10 +54,15 @@ def store_tree(tx, tree):
             add_tree(tx, child)
 
 if __name__ == '__main__':
-    uri = "bolt://localhost:7687"
+    config = configparser.ConfigParser()
+    config.read("/home/loris/.config/neo4j.ini")
 
-    driver = GraphDatabase.driver(uri, auth=("neo4j", "testpassword"))
+    uri = config.get("neo4j", "uri")
+    username = config.get("neo4j", "username")
+    password = config.get("neo4j", "password")
 
+    driver = GraphDatabase.driver(uri, auth=(username, password))
+    
     with driver.session() as session:
         file_path = "/home/loris/Projects/structured_notes/examples/category_theory_introduction.mnote"
 

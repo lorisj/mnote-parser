@@ -14,30 +14,26 @@ as well as special topics from \cite{nourani_2014}.
             A morphism is any object that has a source object $A \in \Ob(C)$ and a target $B \in \Ob(C)$. Morphisms are sometimes called arrows. 
             
             If $f$ is a morphism with source $A \in \Ob(C)$ and target $B \in \Ob(C)$, then this is usually written as $f:A \to B$. 
-        %i
-        A binary operation $\circ : M \to M$, called composition, which satisfies:
+        %i A binary operation $\circ : M \to M$, called composition, which satisfies:
         %enum
-            %i 
-            $\circ$ is associative
-            %i $\Hom(A)$ has an idenity morphism for every $A \in \Ob(C)$
+            %i $\circ$ is associative
+            %i $\Hom(A)$ has an idenity morphism for every $X \in \Ob(C)$
             %def(identity_morphism)[morphism]
-                For every object $A \in \Ob(C)$, there exists an identity morphism $1_A : A \to A$, such that for every morphism $f:A \to B$:
+                For every object $X \in \Ob(C)$, there exists an identity morphism $\id_X : X \to X$, such that for every morphism $f:X \to Y$:
                 %neq
-                    f \circ 1_A = f = 1_B \circ f  
+                    f \circ \id_X = f = \id_Y \circ f  
+                Or as a diagram:
+                %ccd
+                    X \arrow[r, "f"] \arrow["\id_X"', loop, distance=2em, in=215, out=145] & Y \arrow["\id_Y"', loop, distance=2em, in=35, out=325]
 %exp(common_categories)[category]
     See %ref(category) for more information
     %item
-        %i 
-        $\cat{Set}$ has objects consisting of all sets, and morphisms consisting of all functions between sets.
-        %i 
-        $\cat{Top}$ has objects consisting of all topological spaces, and morphisms consisting of all continuous functions between these spaces.
-        %i 
-        $\cat{Group}$ has objects consisting of all groups, and morphisms consisting of all homomorphisms between groups.
-        %i 
-        $\cat{Mod}_R$ for a fixed ring $R$ (with identity),  is the category of left $R$-modules and $R$-module homomorphisms.
+        %i $\cat{Set}$ has objects consisting of all sets, and morphisms consisting of all functions between sets.
+        %i $\cat{Top}$ has objects consisting of all topological spaces, and morphisms consisting of all continuous functions between these spaces.
+        %i $\cat{Group}$ has objects consisting of all groups, and morphisms consisting of all homomorphisms between groups.
+        %i $\cat{Mod}_R$ for a fixed ring $R$ (with identity),  is the category of left $R$-modules and $R$-module homomorphisms.
         If $R$ is a field, then we call this   
-        %i 
-        $\cat{Graph}$ has objects consisting of all graphs, and morphisms consisting of graph homomorphisms.
+        %i $\cat{Graph}$ has objects consisting of all graphs, and morphisms consisting of graph homomorphisms.
         %i 
         $\cat{Model}_T$ for any language $\mathcal L$ and first order $\mathcal L$-theory $T$ is a category with objects as 
         $[\mathcal L, T]$-structures (i.e. $\mathcal L$-structures $\mathcal M$ that model $T$, so $\mathcal M \models T$).
@@ -50,14 +46,16 @@ as well as special topics from \cite{nourani_2014}.
         Thus $f = g$ and identity morphisms are unique.
 
 %def(hom_class)[category]
-    Let $C$ be a category. Let $A,B \in ob(C)$ be two objects. Denote $C(A,B) = \{ f \in \Hom(C)  |  f : A \to B\}$, 
+    Let $C$ be a category. Let $A,B \in \ob(C)$ be two objects. Denote $C(A,B) = \{ f \in \Hom(C)  |  f : A \to B\}$, 
     i.e. the class containing all morphisms with source $A$ and target $B$. This is called the Hom-class, and is sometimes written as $\Hom(A,B)$.
 
 %def(isomorphism)[morphism]
-    A morphism $f:X\to Y$ is an isomorphism if and only if it is invertible, i.e there exists some $g:Y \to X$ such that:
+    A morphism $f:X\to Y$ is an isomorphism if and only if it is invertible, i.e there exists some $f^{-1}:Y \to X$ such that:
     %neq
-        g\circ f &= 1_X\\
-        f\circ g &= 1_Y
+        f^{-1}\circ f &= \id_X\\
+        f\circ f^{-1} &= \id_Y
+    %ccd
+        X \arrow[r, "f", bend left] \arrow["\id_X"', loop, distance=2em, in=215, out=145] & Y \arrow[l, "\exists f^{-1}", dotted, bend left] \arrow["\id_Y"', loop, distance=2em, in=35, out=325]
     
     We then say two objects $X,Y$ are isomorphic.
     

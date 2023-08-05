@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+
+<!-- Mathjax/LATEX support-->
+<!-- Need to place this before loading?-->
+<script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+</script>
+<!-- Maybe don't need the next script:-->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        tex2jax: {
+            inlineMath: [ ['$','$'] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+        },
+        "HTML-CSS": { availableFonts: ["TeX"] }
+    });
+</script>
+<script type="text/javascript" src="{{mathjax_provider}}">
+</script>
+<!-- Mathjax/LATEX support, fix this to add $ as an inline. Maybe have to run a local mathjax server-->
+
+
+
+<html>
+<!-- When you pass in elements use {{var}} to dereference where var is the name of the key-->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale = 1.0">
+<!-- Gives description, i.e what comes up under google's description for this website.-->
+    <meta name="description" content="Personal website for Loris Jautakas">
+
+    <title>{{website_title}}</title>
+    <link rel="stylesheet" href="{% static 'css/homepage_style.css' %}"> 
+</head>
+
+<body>
+    <div class="header">
+        <h1> {{website_title }}</h1>
+        <div class="buttons">
+            <a href="/">Home</a>
+            <a class="selected" href="/projects">Projects</a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="main">
+            
+            <div class="project">
+                <div class="sidebar">
+                    <img src="{% static 'images/qccas.png' %}">
+                    <a class="link" href="https://github.com/lorisj/QCCAS">QCCAS</a>
+                </div>
+                <div class="description">
+                    <p> QCCAS is a highly flexible quantum circuit simulator written in python that uses density operators. Rather than using floating point arithmetic,
+                        QCCAS uses a computer algebra system (sympy) to give exact outputs, and shows all possible outputs of a quantum circuit. QCCAS includes analysis on
+                        complexity, and proofs of accuracy for optimization methods used.
+                    </p>
+                    
+                </div>
+            </div>
+            
+            
+        
+            <div class="project">
+                <div class="sidebar">
+                    <img src="{% static 'images/notes.png' %}">
+                    <a class="link" href="/notes">MNotes</a>
+                </div>
+                <div class="description">
+                    <p> MNotes is a math wiki containing notes with formal proofs on math topics such as:</p>
+                     <ul>
+                        <li>Quantum information theory</li>
+                        <li>Classical information theory</li>
+                        <li>Model Theory</li>
+                        <li>Computability Theory</li>
+                        <li>And many more.</li>
+                    </ul> 
+                    <p>Theorems, definitions and examples are catogorized in a graph database, so if a proof uses a definition/theorem/example, you can easily find all the context you need.
+                    </p>
+                </div>
+            </div>
+            
+            
+        
+        </div>
+    </div> 
+    
+
+
+
+            
+            
+    
+       
+
+
+</body>
+
+</html>

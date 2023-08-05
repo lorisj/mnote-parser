@@ -36,13 +36,15 @@ text_grammar = r"""
     block_reference: _WS* "%ref(" BLOCKNAME ")" _WS*
 
     empty_line: _WS* _NL
-    tex_block: enumerate | itemize | nice_equation | equation #| image
-    enumerate:_WS* "%enum" _WS* _NL [_INDENT item* _DEDENT]
-    itemize: _WS*"%item" _WS* _NL [_INDENT item* _DEDENT]
-    nice_equation: _WS*"%neq" _WS*_NL [_INDENT line+ _DEDENT]
-    equation: _WS*"%eq" _WS* _NL [_INDENT line+ _DEDENT]
+    tex_block: enumerate | itemize | nice_equation | equation | tikcd | tikcd_center #| image
+    enumerate:_WS* "%enum" _WS* _NL [_INDENT item+ _DEDENT]
+    tikcd: _WS* "%cd" _WS* _NL [_INDENT text _DEDENT]    
+    tikcd_center: _WS* "%ccd" _WS* _NL [_INDENT text _DEDENT]
+    itemize: _WS*"%item" _WS? _NL [_INDENT item+ _DEDENT]
+    nice_equation: _WS*"%neq" _WS*_NL [_INDENT text _DEDENT]
+    equation: _WS*"%eq" _WS* _NL [_INDENT text _DEDENT]
     item: "%i" _WS? content*
-
+    
     dline: _WS* "%dl" _NL?
     subtitle: _WS* "%st(" BLOCKNAME ")" _NL?
     image: _WS* "%img(" BLOCKNAME ")" _NL?
@@ -76,10 +78,14 @@ def title_case(title: str) -> str:
             title_cased_words.append(word.lower())
     return " ".join(title_cased_words)
 
+def escape_underscore(string: str) -> str:
+    return string.replace("_", "\_")
+
+def replace_underscore(string: str) -> str:
+    return string.replace("_", "")
 
 def format_name(name: str) -> str:
-    
-    name = name.replace("_", " ")
+    name = replace_underscore(name)
     name = title_case(name)
     return name
 class MyInterpreter(Interpreter):
@@ -170,6 +176,15 @@ class MyInterpreter(Interpreter):
         
     def enumerate(self, tree):
         self.tex_block_print("enumerate", tree)
+    def tikcd(self, tree):
+        self.tex_block_print("tikzcd", tree)
+
+    def tikcd_center(self, tree):
+        self.ind_println("\\begin{center}")
+        self.indent_level += 1
+        self.tex_block_print("tikzcd", tree)
+        self.indent_level -= 1
+        self.ind_println("\\end{center}")
 
     def itemize(self, tree):
         self.tex_block_print("itemize", tree)
@@ -188,15 +203,17 @@ class MyInterpreter(Interpreter):
     def boxed_object(self, type, tree):
         
         content_list = tree.children[1:]
+        tag_name = tree.children[0]
         name = ""
 
         if isinstance(tree.children[1], str):
             content_list = tree.children[2:]
-            name = f"(in {tree.children[1]}) "# keep space here
-        name+= tree.children[0]
-        name = format_name(name)
+            name = f"\ldots /{tree.children[1]}/"# keep space here
+        else:
+            name += "$\sim$/"#"" #
+        name+= format_name(tag_name)
 
-        self.ind_println("\\begin{" + type + "}{" + name + "}{" + name + "}")
+        self.ind_println("\\begin{" + type + "}{" + name + "}{" + escape_underscore(tag_name) + "}")
         self.indent_level += 1
         for child in content_list:
             self.visit(child)
@@ -231,14 +248,14 @@ def get_parser():
 
     
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('file_path', help='The path to the input file')
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file_path', help='The path to the input file')
+    args = parser.parse_args()
 
     
-    # file_path = args.file_path
+    file_path = args.file_path
 
-    file_path = "/home/loris/Projects/structured_notes/examples/category_theory_introduction.mnote"
+    #file_path = "/home/loris/Projects/structured_notes/examples/category_theory_introduction.mnote"
     
     mnote_parser = get_parser()
 
@@ -248,8 +265,8 @@ if __name__ == '__main__':
         tree = mnote_parser.parse(input_text)
         interpreter = MyInterpreter()
         
-        print(tree.pretty())
-        exit()
+        # print(tree.pretty()) # PRINT TREE STRUCTURE
+        # exit()
         print(latex_start_text)
         
         interpreter.visit(tree)

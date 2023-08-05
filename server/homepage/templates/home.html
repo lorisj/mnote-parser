@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+
+<!-- Mathjax/LATEX support-->
+<!-- Need to place this before loading?-->
+<script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+</script>
+<!-- Maybe don't need the next script:-->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        tex2jax: {
+            inlineMath: [ ['$','$'] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+        },
+        "HTML-CSS": { availableFonts: ["TeX"] }
+    });
+</script>
+<script type="text/javascript" src="{{mathjax_provider}}">
+</script>
+<!-- Mathjax/LATEX support, fix this to add $ as an inline. Maybe have to run a local mathjax server-->
+
+
+
+<html>
+<!-- When you pass in elements use {{var}} to dereference where var is the name of the key-->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale = 1.0">
+<!-- Gives description, i.e what comes up under google's description for this website.-->
+    <meta name="description" content="Personal website for Loris Jautakas">
+
+    <title>{{website_title}}</title>
+    <link rel="stylesheet" href="{% static 'css/homepage_style.css' %}"> 
+</head>
+
+<body>
+    <div class="header">
+        <h1> {{website_title }}</h1>
+        <div class="buttons">
+            <a class="selected" href="/">Home</a>
+            <a href="/projects">Projects</a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="sidebar">
+            <img src="{% static 'images/loris.jpg' %}" >
+            <a class="link" href="mailto:lorisj@umich.edu">lorisj@umich.edu</a>
+        </div>
+        <div class="main">
+            
+            <div class="section">
+                <h2> About me</h2>
+                <p>Hi! <br> I am a 4th year undergraduate student studying <b>computer science</b> and <b>math</b> at the University of Michigan. 
+                    I am mostly interested in quantum information theory, but also in other fields including model theory, 
+                    machine learning, and algebra. </p>
+            </div>
+            
+            <div class="section">
+                <h2> Experience </h2>   
+                <h3>Quantum source coding</h3>
+                <p>I am currently working on reasearch in quantum information theory (since May 2022) with <a href="https://pradhan.engin.umich.edu/">Prof. S. Sandeep Pradhan.</a>
+                     So far, we have developed a way to perform quantum source coding in polynomial time, and are attempting to apply this result to the problem of
+                     distributed quantum source coding. We intend to publish the results later this year.</p> 
+                <h3>Circuit design</h3>
+                <p>In the past, I worked with <a href="https://ners.engin.umich.edu/people/kearfott-kimberlee/"> Prof. Kim Kearfott</a> on circuit design for a do-it-yourself smart geiger counter.
+                I mostly worked on power electronics, but also worked in signal processing and software engineering.</p>
+            </div>
+            <div class="section">
+                <h2>Other Experience</h2>
+                <h3>Instructional assistant - <a href="https://www.eecs.umich.edu/courses/eecs498.001/">Quantum Programming (EECS 498)</a></h3>
+                <p>I am currently a instructional assistant for EECS 498. I lead a lab section with over 30 students, teaching them concepts in quantum computing, linear
+                    algebra, and quantum error correction.
+                </p>
+                <h3>Grader - Quantum Information, Probability, Computation (EECS 598)</a></h3>
+                <p>I was a grader for EECS 598 for winter 2021. I graded homeworks on topics ranging from quantum error correction, probability, and algorithms.
+                </p>
+            </div>
+            
+        </div>
+    </div> 
+    
+
+
+
+            
+            
+    
+       
+
+
+</body>
+
+</html>

@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+
+<!-- Mathjax/LATEX support-->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        tex2jax: {
+            inlineMath: [ ['$','$'] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+        },
+        "HTML-CSS": { availableFonts: ["TeX"] }
+    });
+</script>
+<script type="text/javascript" src="{{mathjax_provider}}">
+</script>
+<!-- Mathjax/LATEX support, fix this to add $ as an inline. Maybe have to run a local mathjax server-->
+
+
+
+<html>
+<!-- When you pass in elements use {{var}} to dereference where var is the name of the key-->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale = 1.0">
+<!-- Gives description, i.e what comes up under google's description for this website.-->
+    <meta name="description" content="CV for Loris Jautakas">
+
+    <title>CV</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"> 
+</head>
+
+<body>
+    <h1> Resume</h1>
+    <a class="link" href="mailto:lorisj@umich.edu">lorisj@umich.edu</a>
+    <img src="{% static 'images/loris.jpg' %}">
+    <h2> Introduction</h2>
+    
+</body>
+
+</html>

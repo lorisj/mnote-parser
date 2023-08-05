@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      body {
+        color: #000000;
+        font: 12pt arial;
+      }
+      
+      #mynetwork {
+        width: 100%;
+        height: 600px;
+        border: 1px solid lightgray;
+        background-color: #333333;
+      }      
+    </style>
+    
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  </head>
+  <h1>Graph view</h1>
+  <label>
+    Filter nodes<select id="nodeFilterSelect">
+      <option value="">All</option>
+      <option value="definition">Definitions</option>
+      <option value="result">Results</option>
+      <option value="example">Examples</option>
+    </select>
+  </label>
+  <br />
+  <br />
+  <label>
+    Filter edges<div>
+      {% for edge_type, properties in edge_types.items %}
+        <label>
+          <input type="checkbox" name="edgesFilter" value="{{ edge_type }}" checked="" />
+          <span style="color: {{ properties.color }}">{{ edge_type }}</span>
+        </label>
+      {% endfor %}
+    </div>
+  </label>
+  <br />
+  <input type="button" onclick="clusterByFile()" value="Cluster by file" />
+  <br />
+  <br />
+  Stabilize when clustering:<input type="checkbox" id="stabilizeCheckbox" />
+  <br />
+  <div id="mynetwork"></div>
+
+  <script>
+    const nodeFilterSelector = document.getElementById('nodeFilterSelect')
+    const edgeFilters = document.getElementsByName('edgesFilter')
+    
+    function startNetwork(data) {
+      const container = document.getElementById('mynetwork')
+      const options = {
+        layout: {
+          randomSeed: 3 // Set random seed so it looks the same every time.
+        },
+        nodes:{
+          font: { color: "#eeeeee" },
+        }
+      }
+      network = new vis.Network(container, data, options)
+      network.on("selectNode", function (params) {
+        if (params.nodes.length == 1) {
+          if (network.isCluster(params.nodes[0]) == true) {
+            network.openCluster(params.nodes[0]);
+            startNetwork({ nodes: nodesView, edges: edgesView })
+          }
+        }
+      });
+    }
+    
+    /**
+     * In this example we do not mutate nodes or edges source data.
+     */
+    const nodes = new vis.DataSet({{ nodes  | safe}})
+    
+    const edges = new vis.DataSet({{ edges  | safe}})
+    var data = {
+      nodes: nodes,
+      edges: edges,
+    };
+    /**
+     * filter values are updated in the outer scope.
+     * in order to apply filters to new values, DataView.refresh() should be called
+     */
+    let nodeFilterValue = ''
+
+    var edgesFilterValues = {
+      {% for edge_type in edge_types %}
+        "{{ edge_type }}": true,
+      {% endfor %}
+    };
+    
+    function clusterByFile() {
+      network.setData(data);
+      var files = ["/category_theory/basics/category_theory_introduction.mnote"];  // replace with your actual file types
+    
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var firstNodeColor;
+    
+        var clusterOptionsByData = {
+          joinCondition: function (childOptions) {
+            return childOptions.file == file; // replace `file_type` with your actual attribute name
+          },
+          processProperties: function (clusterOptions, childNodes, childEdges) {
+            var totalMass = 0;
+            for (var i = 0; i < childNodes.length; i++) {
+              totalMass += childNodes[i].mass;
+              if (i == 0) {
+                firstNodeColor = childNodes[i].color.background;  // grab the color of the first node
+              }
+            }
+            clusterOptions.mass = totalMass;
+            return clusterOptions;
+          },
+          clusterNodeProperties: {
+            id: "cluster:" + file,
+            borderWidth: 3,
+            font: { size: 40, color: "#000000" },
+            shape: "box",
+            color: firstNodeColor, // use the color of the first node
+            label: file,
+          },
+        };
+    
+        network.cluster(clusterOptionsByData);
+        if (document.getElementById("stabilizeCheckbox").checked === true) {
+          // since we use the scale as a unique identifier, we do NOT want to fit after the stabilization
+          network.setOptions({
+            physics: {
+              stabilization: {
+                fit: false
+              }
+            }
+          });
+          network.stabilize();
+        }
+      }
+    }
+    /*
+        filter function should return true or false
+        based on whether item in DataView satisfies a given condition.
+    */
+    const nodesFilter = (node) => {
+      if (nodeFilterValue === '') {
+        return true
+      }
+      switch (nodeFilterValue) {
+        case 'definition':
+          return node.type === 'definition'
+        case 'result':
+          return node.type === 'result'
+        case 'example':
+          return node.type === 'example'
+        default:
+          return true
+      }
+    }
+    
+    const edgesFilter = (edge) => {
+      return edgesFilterValues[edge.type]
+    }
+    
+    const nodesView = new vis.DataView(nodes, { filter: nodesFilter })
+    const edgesView = new vis.DataView(edges, { filter: edgesFilter })
+    
+    nodeFilterSelector.addEventListener('change', (e) => {
+      // set new value to filter variable
+      nodeFilterValue = e.target.value
+      /*
+        refresh DataView,
+        so that its filter function is re-calculated with the new variable
+      */
+      nodesView.refresh()
+      
+    })
+    
+    edgeFilters.forEach((filter) =>
+      filter.addEventListener('change', (e) => {
+        const { value, checked } = e.target
+        edgesFilterValues[value] = checked
+        edgesView.refresh()
+
+      })
+    )
+    
+    startNetwork({ nodes: nodesView, edges: edgesView })
+  </script>
+</html>
