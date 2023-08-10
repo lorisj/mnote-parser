@@ -20,8 +20,10 @@ body{
     font-family: BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;
 } 
 
+
+
 p{
-    font-size: x-large; 
+    font-size: large; 
     color: black;
 }
 
@@ -100,10 +102,19 @@ p{
 .project {
   display: flex;
   flex-direction: row;
-  border-bottom: 2px solid black;
+  border-bottom: 3px solid black;
   margin-top: 2em;
+  margin-bottom: 1em;
 }
 
 .project .sidebar {
   font-size: 2em;
+  margin-bottom: 1em;
+}
+.section{
+    border:1px solid black;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
 }

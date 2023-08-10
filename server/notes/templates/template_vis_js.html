@@ -5,6 +5,7 @@
       body {
         color: #000000;
         font: 12pt arial;
+        background-color: darkgrey;
       }
       
       #mynetwork {
@@ -12,9 +13,9 @@
         height: 600px;
         border: 1px solid lightgray;
         background-color: #333333;
-      }      
+      }
     </style>
-    
+
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   </head>
   <h1>Graph view</h1>
@@ -41,9 +42,6 @@
   <br />
   <input type="button" onclick="clusterByFile()" value="Cluster by file" />
   <br />
-  <br />
-  Stabilize when clustering:<input type="checkbox" id="stabilizeCheckbox" />
-  <br />
   <div id="mynetwork"></div>
 
   <script>
@@ -58,6 +56,11 @@
         },
         nodes:{
           font: { color: "#eeeeee" },
+        },
+        physics: {
+          barnesHut : {
+            gravitationalConstant : -5000
+          }
         }
       }
       network = new vis.Network(container, data, options)
@@ -65,11 +68,12 @@
         if (params.nodes.length == 1) {
           if (network.isCluster(params.nodes[0]) == true) {
             network.openCluster(params.nodes[0]);
-            startNetwork({ nodes: nodesView, edges: edgesView })
+            //startNetwork({ nodes: nodesView, edges: edgesView }) // TODO: do this when all clusters are open
           }
         }
       });
     }
+  
     
     /**
      * In this example we do not mutate nodes or edges source data.
@@ -95,7 +99,7 @@
     
     function clusterByFile() {
       network.setData(data);
-      var files = ["/category_theory/basics/category_theory_introduction.mnote"];  // replace with your actual file types
+      var files = {{ file_paths_list | safe }};  // replace with your actual file types
     
       for (var i = 0; i < files.length; i++) {
         var file = files[i];
@@ -106,14 +110,13 @@
             return childOptions.file == file; // replace `file_type` with your actual attribute name
           },
           processProperties: function (clusterOptions, childNodes, childEdges) {
-            var totalMass = 0;
-            for (var i = 0; i < childNodes.length; i++) {
-              totalMass += childNodes[i].mass;
-              if (i == 0) {
-                firstNodeColor = childNodes[i].color.background;  // grab the color of the first node
-              }
-            }
-            clusterOptions.mass = totalMass;
+            //var totalMass = 0;
+            //for (var i = 0; i < childNodes.length; i++) {
+            //  totalMass += childNodes[i].mass;
+            
+            firstNodeColor = childNodes[0].color; // set the desired color
+            //clusterOptions.mass = totalMass;
+            clusterOptions.color = firstNodeColor; // set color in the cluster options
             return clusterOptions;
           },
           clusterNodeProperties: {
@@ -121,23 +124,14 @@
             borderWidth: 3,
             font: { size: 40, color: "#000000" },
             shape: "box",
-            color: firstNodeColor, // use the color of the first node
-            label: file,
+            color: firstNodeColor, // use the color value
+            label: file, // use the filename as the label
+            physics : true,
           },
         };
     
         network.cluster(clusterOptionsByData);
-        if (document.getElementById("stabilizeCheckbox").checked === true) {
-          // since we use the scale as a unique identifier, we do NOT want to fit after the stabilization
-          network.setOptions({
-            physics: {
-              stabilization: {
-                fit: false
-              }
-            }
-          });
-          network.stabilize();
-        }
+        
       }
     }
     /*
