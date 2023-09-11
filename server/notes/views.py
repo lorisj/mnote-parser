@@ -16,9 +16,9 @@ import configparser
 import json as json 
 from . import client
 
-origin = "~/Notes/mnote-notefiles-public"
 
 
+home = os.path.expanduser("~")
 
 
 
@@ -44,11 +44,11 @@ class UpdateNotes(APIView):
     def get(self, request, format=None):
         try:
             # Change your directory path as needed
-            A = subprocess.check_output(['git', '-C', '~/Notes/mnote-notefiles-public', 'pull'])
+            A = subprocess.check_output(['git', '-C', f'{home}/Notes/mnote-notefiles-public', 'pull'])
             # In the future find which paths to update
 
             # Process the output
-            client.upload_client("~/Notes/mnote-notefiles-public")
+            client.upload_client(f"{home}/Notes/mnote-notefiles-public")
 
             return Response({'status': 'success'}, status=200)
         except subprocess.CalledProcessError as e:
@@ -110,7 +110,7 @@ def get_file_paths_list(starting_directory):
     return out
 
 def notes(request):
-    
+    origin = f"{home}/Notes/mnote-notefiles-public"
     file_paths_list = get_file_paths_list(origin)
     
     for index, value in enumerate(file_paths_list):
@@ -133,7 +133,7 @@ def get_visualization_json_data(file_paths_list):
     directory_indexer = DirectoryIndexer(file_paths_list)
     # Connect to the database
     config = configparser.ConfigParser()
-    config.read("~/.config/neo4j.ini") # TODO: replace with config file location
+    config.read(f"{home}/.config/neo4j.ini") # TODO: replace with config file location
 
     uri = config.get("neo4j", "uri")
     username = config.get("neo4j", "username")
