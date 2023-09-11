@@ -9,7 +9,7 @@ import os as os
 import argparse
 from pathlib import Path
 
-origin = "/home/loris/Notes/mnote-notefiles-public"
+origin = "~/Notes/mnote-notefiles-public"
 
 def create_nodes(tx, tree, filename, parent_name=None, parent_type=None):
     # Only process if this is a block
@@ -100,7 +100,7 @@ def traverse_and_process(tx, starting_directory):
 
 def upload_client(starting_filepath):
     config = configparser.ConfigParser()
-    config.read("/home/loris/.config/neo4j.ini") #TODO: CHANGEME
+    config.read("~/.config/neo4j.ini") #TODO: CHANGEME
 
     uri = config.get("neo4j", "uri")
     username = config.get("neo4j", "username")
@@ -116,7 +116,7 @@ def upload_client(starting_filepath):
 
 def remove_client():
     config = configparser.ConfigParser()
-    config.read("/home/loris/.config/neo4j.ini") #TODO: CHANGEME
+    config.read("~/.config/neo4j.ini") #TODO: CHANGEME
     uri = config.get("neo4j", "uri")
     username = config.get("neo4j", "username")
     password = config.get("neo4j", "password")
