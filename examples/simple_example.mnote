@@ -2,9 +2,9 @@ next line will be empty
 
 after the empty line
 %def(vector_space)
-    this is the def of a vector space
+    this is the definition of a vector space
     this is the second line
-    %res(key_theorem)
+%res(key_theorem)
         Key theorem of linear algebra goes here
         %enum
             %i this is the first item
@@ -24,4 +24,8 @@ after the empty line
                 this is a example inside of a proof
                 
                 
-                two empty lines should be above this 
+                two empty lines should be above this
+                
+                Now for an image:
+                %img(/asdfadsf.svg)
+                

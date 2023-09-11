@@ -51,20 +51,23 @@
     </div>
     <div class="content">
         <div class="main">
-            
+            <h2>Projects page:</h2>
+            <div class="section">
+                
+                <p>Below is a list of some of my current projects. If you have an interest or any thoughts for any of these please let me know.</p>
+            </div>
             <div class="project">
                 <div class="sidebar">
                     <img src="{% static 'images/notes.png' %}">
                     <a class="link" href="/notes">MNotes</a>
                 </div>
                 <div class="description">
-                    <p> MNotes is a math wiki containing notes with formal proofs on math topics such as:</p>
+                    <p> <b>MNotes</b> is a math wiki containing notes with formal proofs on math topics such as:</p>
                      <ul>
                         <li>Quantum information theory</li>
                         <li>Classical information theory</li>
                         <li>Model Theory</li>
                         <li>Computability Theory</li>
-                        <li>And many more.</li>
                     </ul> 
                     <p>Theorems, definitions and examples are catogorized in a graph database, so if a proof uses a definition/theorem/example, you can easily find all the context you need.
                     </p>
@@ -77,14 +80,24 @@
                     <a class="link" href="https://github.com/lorisj/QCCAS">QCCAS</a>
                 </div>
                 <div class="description">
-                    <p> QCCAS is a highly flexible quantum circuit simulator written in python that uses density operators. Rather than using floating point arithmetic,
-                        QCCAS uses a computer algebra system (sympy) to give exact outputs, and shows all possible outputs of a quantum circuit. QCCAS includes analysis on
-                        complexity, and proofs of accuracy for optimization methods used.
+                    <p> <b>QCCAS</b> is a highly flexible quantum circuit simulator written in python that uses density operators. Rather than using floating point arithmetic,
+                        QCCAS uses a computer algebra system (sympy) to give exact outputs, and shows all possible outputs of a quantum circuit. It also allows for n-ary qudits, and other operations such as partial trace and purification.
                     </p>
                     
                 </div>
             </div>
             
+            <div class="project">
+                <div class="sidebar">
+                    <img src="{% static 'images/structured_coding.png'%}" >
+                    <a class="link" href="https://github.com/lorisj/structured-coding/blob/main/draft_report.pdf">Structured Coding</a>
+                </div>
+                <div class="description">
+                    <p><b>Structured coding</b> is a writeup of some ideas I had about generalizing the notion of a (algebraic) structured code using model theory/universal algebra. It also includes a summary of model theory in the appendix. </p>
+                    <p>It is currently in the early stages, once I read up more on group codes and algebraic geometry I will give it some more thought.</p>
+                </div>
+
+            </div>
             
         
             

@@ -94,22 +94,27 @@ p{
     flex-direction: column;
     align-items: center;
     margin-right: 2em;
-  }
+}
 .sidebar img {
   margin-bottom: 1em;
+}
+.sidebar a.link{
+    font-size: 0.7em;
+    margin-bottom: 1em;
+    text-align: center;
 }
 
 .project {
   display: flex;
   flex-direction: row;
-  border-bottom: 3px solid black;
+  border-top: 3px solid black;
   margin-top: 2em;
   margin-bottom: 1em;
 }
 
 .project .sidebar {
   font-size: 2em;
-  margin-bottom: 1em;
+  margin-top: 1em;
 }
 .section{
     border:1px solid black;
